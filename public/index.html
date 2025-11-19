@@ -7,17 +7,22 @@
 </head>
 <body>
     <h1>Chatting here</h1>
-    <input type="text" id="message" placeholder="Enter something">
-    <button id="sendBtn">Submit</button>
-    <script src="/socket.io/socket.io.js"></script>
+        <input type="text" id="message" placeholder="Enter something">
+        <button id="sendBtn">Submit</button>
+        <button id="disBtn">Disconnect</button>
+        <button id="reconnectBtn">Reconnect</button>
+        <script src="/socket.io/socket.io.js"></script>
 
     <div id="messages"></div>
 
     <script>
-        const socket = io()
+        const socket = io({
+            reconnection:false
+        })
         const sendBtn = document.getElementById("sendBtn");
         const messageInput = document.getElementById("message");
-        const allMessages = document.getElementById("messages")
+        const allMessages = document.getElementById("messages");
+        const Disbutton = document.getElementById("disBtn");
 
         socket.on("message",(message)=>{
             const p = document.createElement("p");
@@ -26,10 +31,18 @@
         })
 
         sendBtn.addEventListener("click",(e)=>{
+            e.preventDefault();
             const message = messageInput.value;
             console.log(message);
             socket.emit("user-message",message)
+            messageInput.value=""
         })
+        Disbutton.addEventListener("click",()=>{
+            socket.disconnect();
+        })
+        document.getElementById("reconnectBtn").addEventListener("click", () => {
+    socket.connect();
+}); 
     </script>
 </body>
 </html>

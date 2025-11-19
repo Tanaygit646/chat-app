@@ -3,7 +3,7 @@ const path = require("path");
 const express = require("express");
 const app = express();
 const server = http.createServer(app);
-const {Server} = require("socket.io")
+const {Server} = require("socket.io");
 
 app.use(express.static(path.resolve("./public")));
 
@@ -13,6 +13,9 @@ io.on("connection",(socket)=>{
     socket.on("user-message",(message)=>{
         console.log("A new user message:-",message);
         io.emit("message",message)
+    })
+    socket.on("disconnect",()=>{
+        console.log("User Disconnected",socket.id);
     })
 })
 
