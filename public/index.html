@@ -1,48 +1,74 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Chatting application</title>
-</head>
-<body>
+  </head>
+  <body>
     <h1>Chatting here</h1>
-        <input type="text" id="message" placeholder="Enter something">
+    
+    <input type="text" id="username" placeholder="Enter your name">
+    <button id="setUserBtn">set username</button>
+
+    <form id="chatForm">
+        <input type="text" id="message" placeholder="Enter something" />
         <button id="sendBtn">Submit</button>
         <button id="disBtn">Disconnect</button>
         <button id="reconnectBtn">Reconnect</button>
-        <script src="/socket.io/socket.io.js"></script>
+    </form>
+
+    <script src="/socket.io/socket.io.js"></script>
 
     <div id="messages"></div>
 
     <script>
-        const socket = io({
-            reconnection:false
-        })
-        const sendBtn = document.getElementById("sendBtn");
-        const messageInput = document.getElementById("message");
-        const allMessages = document.getElementById("messages");
-        const Disbutton = document.getElementById("disBtn");
+      const socket = io({
+        reconnection: false,
+      });
 
-        socket.on("message",(message)=>{
-            const p = document.createElement("p");
-            p.innerText = message;
-            allMessages.appendChild(p);
-        })
+      const sendBtn = document.getElementById("sendBtn");
+      const messageInput = document.getElementById("message");
+      const allMessages = document.getElementById("messages");
+      const Disbutton = document.getElementById("disBtn");
+      const usernameInput = document.getElementById("username");
+      let username ="";
 
-        sendBtn.addEventListener("click",(e)=>{
-            e.preventDefault();
-            const message = messageInput.value;
-            console.log(message);
-            socket.emit("user-message",message)
-            messageInput.value=""
-        })
-        Disbutton.addEventListener("click",()=>{
-            socket.disconnect();
-        })
-        document.getElementById("reconnectBtn").addEventListener("click", () => {
-    socket.connect();
-}); 
+      document.getElementById("setUserBtn").addEventListener("click",()=>{
+        username = usernameInput.value.trim() || "Anonymous";
+      });
+
+      socket.on("connect",()=>{
+        username = usernameInput.value.trim() || "Anonymous";
+        socket.emit("set-username",username);
+      });
+
+      socket.on("message", (finalMessage) => {
+        const p = document.createElement("p");
+        p.innerText = finalMessage;
+        allMessages.appendChild(p);
+      });
+
+      sendBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        const message = messageInput.value;
+        if(!message) return;
+
+        socket.emit("user-message",{
+          username: username,
+          text: message
+        });
+
+        messageInput.value = "";
+      });
+
+      Disbutton.addEventListener("click", () => {
+        socket.disconnect();
+      });
+
+      document.getElementById("reconnectBtn").addEventListener("click", () => {
+        socket.connect();
+      });
     </script>
-</body>
+  </body>
 </html>
